@@ -296,14 +296,20 @@
             console.log('Received postMessage data:', data);
             
             // Handle account_data
-            if (data && data.id && data.name && data.account_region) {
-                console.log('Account data received:', data);
-                displayAccountInfo(data);
+            if (data && data.account_data) {
+                console.log('Account data received:', data.account_data);
+                displayAccountInfo(data.account_data);
             }
             
-            // Handle active_task_data
-            if (data && data.task_type) {
-                console.log('Active task data received:', data);
+            // Handle active_task_data (nested structure from Voximplant)
+            if (data && data.active_task_data) {
+                console.log('Active task data received:', data.active_task_data);
+                handleActiveTaskData(data.active_task_data);
+            }
+            
+            // Also handle direct task_type for testing
+            if (data && data.task_type && !data.active_task_data) {
+                console.log('Direct task data received (testing):', data);
                 handleActiveTaskData(data);
             }
         });
@@ -396,29 +402,25 @@
 
         // Populate customer data into form fields
         function populateCustomerData(customer) {
-            console.log('🔵 populateCustomerData called!');
-            console.log('Customer data received:', customer);
-            alert('Function triggered!'); // This will pop up if it's being called
-            
             console.log('Customer data received:', customer);
             
             // Populate first name with customer_display_name
-            setTimeout(() => {
-                if (customer.customer_display_name) {
-                    document.getElementById('firstName').value = customer.customer_display_name;
-                    console.log('✅ First name set');
+            if (customer.customer_display_name) {
+                document.getElementById('firstName').value = customer.customer_display_name;
+            }
+            
+            // Populate phone from customer_client_ids
+            if (customer.customer_client_ids && customer.customer_client_ids.length > 0) {
+                const clientId = customer.customer_client_ids[0].client_id;
+                if (clientId) {
+                    document.getElementById('phone').value = clientId;
                 }
-                
-                if (customer.customer_client_ids && customer.customer_client_ids.length > 0) {
-                    document.getElementById('phone').value = customer.customer_client_ids[0].client_id;
-                    console.log('✅ Phone set');
-                }
-                
-                if (customer.customer_emails && customer.customer_emails.length > 0) {
-                    document.getElementById('email').value = customer.customer_emails[0];
-                    console.log('✅ Email set');
-                }
-            }, 100);
+            }
+            
+            // Populate email from customer_emails
+            if (customer.customer_emails && customer.customer_emails.length > 0) {
+                document.getElementById('email').value = customer.customer_emails[0];
+            }
             
             console.log('Customer info populated:', customer.customer_display_name);
         }
