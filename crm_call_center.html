@@ -191,6 +191,16 @@
                         <input type="email" id="email" name="email" placeholder="customer@example.com">
                     </div>
                 </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                       <label for="client_id">Client ID <span class="required"></span></label>
+                        <input type="text" id="client_id" name="client_id" placeholder="" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="channel_type">Channel</label>
+                        <input type="text" id="channel_type" name="channel_type" placeholder="">
+                    </div>
+                </div>
 
                 <!-- Personal Information -->
                 <h2 class="section-title">Personal Information</h2>
@@ -286,33 +296,39 @@
     </div>
 
     <script>
-        // Listen for messages from Voximplant Kit
+        console.log('🟢 CRM Script loaded successfully');
+        console.log('🟢 Running inside iframe:', window !== window.parent);
+        
+        // Listen for messages from Voximplant Kit (parent window)
         window.addEventListener('message', function(event) {
+            console.log('🔵 Message received from:', event.origin);
+            console.log('🔵 Message data:', event.data);
+            
             // Optional: Verify the origin for security
-            // if (event.origin !== 'https://your-voximplant-domain.com') return;
+            // if (event.origin !== 'https://kit.voximplant.com') return;
             
             const data = event.data;
             
-            console.log('Received postMessage data:', data);
+            console.log('📨 Received postMessage data:', data);
             
             // Handle account_data
             if (data && data.account_data) {
-                console.log('Account data received:', data.account_data);
+                console.log('✅ Account data received:', data.account_data);
                 displayAccountInfo(data.account_data);
             }
             
             // Handle active_task_data (nested structure from Voximplant)
             if (data && data.active_task_data) {
-                console.log('Active task data received:', data.active_task_data);
+                console.log('✅ Active task data received:', data.active_task_data);
                 handleActiveTaskData(data.active_task_data);
             }
             
             // Also handle direct task_type for testing
             if (data && data.task_type && !data.active_task_data) {
-                console.log('Direct task data received (testing):', data);
+                console.log('✅ Direct task data received (testing):', data);
                 handleActiveTaskData(data);
             }
-        });
+        }, false);
 
         // Display account information in the header
         function displayAccountInfo(accountData) {
@@ -383,6 +399,8 @@
                 let chatNotes = [];
                 
                 chatNotes.push(`Channel: ${channel.channel_type || 'Unknown'}`);
+                document.getElementById('channel_type').value = channel.channel_type;
+
                 if (channel.description) chatNotes.push(`Description: ${channel.description}`);
                 if (chatData.conversation && chatData.conversation.uuid) {
                     chatNotes.push(`Conversation ID: ${chatData.conversation.uuid}`);
@@ -396,33 +414,56 @@
                     notesField.value = chatNotes.join('\n');
                 }
                 
+
+
+
                 console.log('Chat populated - Channel:', channel.channel_type);
             }
         }
 
         // Populate customer data into form fields
         function populateCustomerData(customer) {
-            console.log('Customer data received:', customer);
+            console.log('🟡 populateCustomerData called!');
+            console.log('🟡 Customer data received:', customer);
+            console.log('🟡 customer.customer_client_ids[0],client_id:', customer.customer_client_ids[0].client_id);
             
+
+
+
             // Populate first name with customer_display_name
             if (customer.customer_display_name) {
                 document.getElementById('firstName').value = customer.customer_display_name;
+                console.log('✅ First name set to:', customer.customer_display_name);
             }
             
-            // Populate phone from customer_client_ids
-            if (customer.customer_client_ids && customer.customer_client_ids.length > 0) {
+            // Populate client id from customer_client_ids
+            
+            if (customer.customer_client_ids[0].client_id) {
                 const clientId = customer.customer_client_ids[0].client_id;
-                if (clientId) {
-                    document.getElementById('phone').value = clientId;
-                }
+                 console.log('✅ CUSTOMER client_id:', customer.customer_client_ids[0].client_id);
+              
+                    document.getElementById('client_id').value = customer.customer_client_ids[0].client_id;
+                    console.log('✅ Client ID set to:', customer.customer_client_ids[0].client_id);
+                
             }
-            
+             
+
+
             // Populate email from customer_emails
             if (customer.customer_emails && customer.customer_emails.length > 0) {
                 document.getElementById('email').value = customer.customer_emails[0];
+                console.log('✅ Email set to:', customer.customer_emails[0]);
             }
-            
-            console.log('Customer info populated:', customer.customer_display_name);
+            if (call.phone_a && call.phone_a > 0) {
+             document.getElementById('phone').value = call.phone_a;
+              console.log('✅ phone a:', call.phone_a);
+            }
+
+            document.getElementById('channel_type').value = channel.channel_type;
+
+
+
+            console.log('🎉 Customer info populated successfully!');
         }
 
         // Form submission
