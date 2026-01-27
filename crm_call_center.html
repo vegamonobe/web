@@ -164,8 +164,17 @@
 <body>
     <div class="crm-container">
         <div class="crm-header">
-            <h1>Call Center CRM</h1>
-            <p>Customer Information Management</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>Call Center CRM</h1>
+                    <p>Customer Information Management</p>
+                </div>
+                <div id="accountInfo" style="text-align: right; font-size: 13px; opacity: 0.9; display: none;">
+                    <div><strong>Account:</strong> <span id="accountName">-</span></div>
+                    <div><strong>Region:</strong> <span id="accountRegion">-</span></div>
+                    <div style="font-size: 11px; margin-top: 4px;">ID: <span id="accountId">-</span></div>
+                </div>
+            </div>
         </div>
 
         <div class="crm-body">
@@ -277,6 +286,149 @@
     </div>
 
     <script>
+        // Listen for messages from Voximplant Kit
+        window.addEventListener('message', function(event) {
+            // Optional: Verify the origin for security
+            // if (event.origin !== 'https://your-voximplant-domain.com') return;
+            
+            const data = event.data;
+            
+            console.log('Received postMessage data:', data);
+            
+            // Handle account_data
+            if (data && data.id && data.name && data.account_region) {
+                console.log('Account data received:', data);
+                displayAccountInfo(data);
+            }
+            
+            // Handle active_task_data
+            if (data && data.task_type) {
+                console.log('Active task data received:', data);
+                handleActiveTaskData(data);
+            }
+        });
+
+        // Display account information in the header
+        function displayAccountInfo(accountData) {
+            document.getElementById('accountId').textContent = accountData.id;
+            document.getElementById('accountName').textContent = accountData.name;
+            document.getElementById('accountRegion').textContent = accountData.account_region;
+            document.getElementById('accountInfo').style.display = 'block';
+            
+            console.log('Account Info Updated:');
+            console.log('- ID:', accountData.id);
+            console.log('- Name:', accountData.name);
+            console.log('- Region:', accountData.account_region);
+        }
+
+        // Handle active task data (CALL or IM)
+        function handleActiveTaskData(taskData) {
+            const taskType = taskData.task_type;
+            
+            if (taskType === 'CALL') {
+                handleCallData(taskData);
+            } else if (taskType === 'IM') {
+                handleChatData(taskData);
+            }
+            
+            // Handle customer data (common to both CALL and IM)
+            if (taskData.CUSTOMER) {
+                populateCustomerData(taskData.CUSTOMER);
+            }
+        }
+
+        // Handle CALL type data
+        function handleCallData(callData) {
+            console.log('Call data received:', callData);
+            
+            if (callData.CALL) {
+                const call = callData.CALL;
+                
+                // Auto-populate phone number
+                if (call.phone_b) {
+                    document.getElementById('phone').value = call.phone_b;
+                }
+                
+                // Set call reason in notes if available
+                const notesField = document.getElementById('notes');
+                let callNotes = [];
+                
+                if (call.session_id) callNotes.push(`Session ID: ${call.session_id}`);
+                if (call.callerid) callNotes.push(`Caller ID: ${call.callerid}`);
+                if (call.record_url) callNotes.push(`Recording: ${call.record_url}`);
+                
+                if (callNotes.length > 0) {
+                    notesField.value = callNotes.join('\n');
+                }
+                
+                console.log('Call populated - Phone:', call.phone_b);
+            }
+        }
+
+        // Handle IM (chat) type data
+        function handleChatData(chatData) {
+            console.log('Chat data received:', chatData);
+            
+            if (chatData.channel) {
+                const channel = chatData.channel;
+                
+                // Add channel info to notes
+                const notesField = document.getElementById('notes');
+                let chatNotes = [];
+                
+                chatNotes.push(`Channel: ${channel.channel_type || 'Unknown'}`);
+                if (channel.description) chatNotes.push(`Description: ${channel.description}`);
+                if (chatData.conversation && chatData.conversation.uuid) {
+                    chatNotes.push(`Conversation ID: ${chatData.conversation.uuid}`);
+                }
+                
+                if (chatData.last_message && chatData.last_message.text) {
+                    chatNotes.push(`Last message: ${chatData.last_message.text}`);
+                }
+                
+                if (chatNotes.length > 0) {
+                    notesField.value = chatNotes.join('\n');
+                }
+                
+                console.log('Chat populated - Channel:', channel.channel_type);
+            }
+        }
+
+        // Populate customer data into form fields
+        function populateCustomerData(customer) {
+            console.log('Customer data received:', customer);
+            
+            // Parse customer display name into first and last name
+            if (customer.customer_display_name) {
+                const nameParts = customer.customer_display_name.split(' ');
+                if (nameParts.length >= 2) {
+                    document.getElementById('firstName').value = nameParts[0];
+                    document.getElementById('lastName').value = nameParts.slice(1).join(' ');
+                } else {
+                    document.getElementById('firstName').value = customer.customer_display_name;
+                }
+            }
+            
+            // Populate phone (if not already set by call data)
+            if (customer.customer_phones && customer.customer_phones.length > 0) {
+                if (!document.getElementById('phone').value) {
+                    document.getElementById('phone').value = customer.customer_phones[0];
+                }
+            }
+            
+            // Populate email
+            if (customer.customer_emails && customer.customer_emails.length > 0) {
+                document.getElementById('email').value = customer.customer_emails[0];
+            }
+            
+            // Add customer details to company field
+            if (customer.customer_details) {
+                document.getElementById('company').value = customer.customer_details;
+            }
+            
+            console.log('Customer info populated:', customer.customer_display_name);
+        }
+
         // Form submission
         document.getElementById('crmForm').addEventListener('submit', function(e) {
             e.preventDefault();
