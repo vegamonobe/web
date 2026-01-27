@@ -293,17 +293,17 @@
             
             const data = event.data;
             
-            console.log('Recibido en postMessage data:', data);
+            console.log('Received postMessage data:', data);
             
             // Handle account_data
             if (data && data.id && data.name && data.account_region) {
-                console.log('Account data recibido:', data);
+                console.log('Account data received:', data);
                 displayAccountInfo(data);
             }
             
             // Handle active_task_data
             if (data && data.task_type) {
-                console.log('Active task data recibido:', data);
+                console.log('Active task data received:', data);
                 handleActiveTaskData(data);
             }
         });
@@ -398,32 +398,22 @@
         function populateCustomerData(customer) {
             console.log('Customer data received:', customer);
             
-            // Parse customer display name into first and last name
+            // Populate first name with customer_display_name
             if (customer.customer_display_name) {
-                const nameParts = customer.customer_display_name.split(' ');
-                if (nameParts.length >= 2) {
-                    document.getElementById('firstName').value = nameParts[0];
-                    document.getElementById('lastName').value = nameParts.slice(1).join(' ');
-                } else {
-                    document.getElementById('firstName').value = customer.customer_display_name;
+                document.getElementById('firstName').value = customer.customer_display_name;
+            }
+            
+            // Populate phone from customer_client_ids
+            if (customer.customer_client_ids && customer.customer_client_ids.length > 0) {
+                const clientId = customer.customer_client_ids[0].client_id;
+                if (clientId) {
+                    document.getElementById('phone').value = clientId;
                 }
             }
             
-            // Populate phone (if not already set by call data)
-            if (customer.customer_phones && customer.customer_phones.length > 0) {
-                if (!document.getElementById('phone').value) {
-                    document.getElementById('phone').value = customer.customer_phones[0];
-                }
-            }
-            
-            // Populate email
+            // Populate email from customer_emails
             if (customer.customer_emails && customer.customer_emails.length > 0) {
                 document.getElementById('email').value = customer.customer_emails[0];
-            }
-            
-            // Add customer details to company field
-            if (customer.customer_details) {
-                document.getElementById('company').value = customer.customer_details;
             }
             
             console.log('Customer info populated:', customer.customer_display_name);
