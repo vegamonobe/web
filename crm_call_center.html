@@ -293,17 +293,17 @@
             
             const data = event.data;
             
-            console.log('Received postMessage data:', data);
+            console.log('Recibido en postMessage data:', data);
             
             // Handle account_data
             if (data && data.id && data.name && data.account_region) {
-                console.log('Account data received:', data);
+                console.log('Account data recibido:', data);
                 displayAccountInfo(data);
             }
             
             // Handle active_task_data
             if (data && data.task_type) {
-                console.log('Active task data received:', data);
+                console.log('Active task data recibido:', data);
                 handleActiveTaskData(data);
             }
         });
