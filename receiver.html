@@ -59,11 +59,12 @@
                 console.log('Object message received:', JSON.stringify(event.data, null, 2));
             }
             
-            // Display on page
+            // Display on page (clear previous messages)
             const display = document.getElementById('messageDisplay');
             if (display) {
                 const timestamp = new Date().toLocaleTimeString();
-                display.innerHTML += `
+                // Clear previous messages and show only the new one
+                display.innerHTML = `
                     <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 3px;">
                         <strong>[${timestamp}]</strong> ${JSON.stringify(event.data)}
                     </div>
