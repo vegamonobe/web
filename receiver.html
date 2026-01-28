@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>postMessage Receiver Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        #messageDisplay {
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            min-height: 100px;
+        }
+        .info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>postMessage Receiver</h1>
+    
+    <div class="info">
+        <strong>Status:</strong> Listening for postMessage events...<br>
+        <strong>Note:</strong> Open the browser console (F12) to see detailed logs.
+    </div>
+
+    <div id="messageDisplay">
+        <em>No messages received yet...</em>
+    </div>
+
+    <script>
+        // JavaScript code to listen for postMessage events
+        window.addEventListener('message', function(event) {
+            // Log the entire event to console
+            console.log('='.repeat(60));
+            console.log('Received postMessage event:');
+            console.log('Message data:', event.data);
+            console.log('Origin:', event.origin);
+            console.log('Source:', event.source);
+            console.log('='.repeat(60));
+            
+            // If the message is a simple string like "hello world"
+            if (typeof event.data === 'string') {
+                console.log('String message received:', event.data);
+            }
+            
+            // If the message is an object (JSON)
+            if (typeof event.data === 'object') {
+                console.log('Object message received:', JSON.stringify(event.data, null, 2));
+            }
+            
+            // Display on page
+            const display = document.getElementById('messageDisplay');
+            if (display) {
+                const timestamp = new Date().toLocaleTimeString();
+                display.innerHTML += `
+                    <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 3px;">
+                        <strong>[${timestamp}]</strong> ${JSON.stringify(event.data)}
+                    </div>
+                `;
+            }
+        });
+
+        console.log('postMessage listener is now active and waiting for messages...');
+    </script>
+</body>
+</html>
