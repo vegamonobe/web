@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Información de Contacto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 8px;
+            font-size: 11px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 3px;
+            font-size: 11px;
+        }
+
+        input {
+            padding: 6px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 11px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 28px;
+            white-space: nowrap;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-bar {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 8px;
+            display: none;
+        }
+
+        .status-bar.visible {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .status-info {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-label {
+            font-size: 9px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .status-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+            margin-top: 1px;
+        }
+
+        .contacts-container {
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .contacts-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .contacts-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .contacts-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+        }
+
+        .contacts-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+        }
+
+        .contact-card {
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .contact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .phone-number {
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .contact-details {
+            display: grid;
+            gap: 6px;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            gap: 6px;
+            align-items: start;
+        }
+
+        .campaign-section {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .campaign-title-header {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 11px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 10px;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 10px;
+            word-break: break-word;
+        }
+
+        .attempts-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .attempt-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .attempt-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .attempt-dot.active {
+            background: #667eea;
+        }
+
+        .custom-data {
+            background: #f8f9fa;
+            padding: 6px 8px;
+            border-radius: 4px;
+            margin-top: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            color: #495057;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 60px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .loading.visible {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+            margin-top: 8px;
+            display: none;
+            font-size: 10px;
+        }
+
+        .error.visible {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 20px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .empty-state.visible {
+            display: block;
+        }
+
+        .empty-state-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            color: #666;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+            }
+
+            .contacts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-row {
+                grid-template-columns: 1fr;
+                gap: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Búsqueda de Contactos</h1>
+            <form class="search-form" id="searchForm">
+                <div class="form-group">
+                    <label for="phoneInput">Número de Teléfono</label>
+                    <input 
+                        type="text" 
+                        id="phoneInput" 
+                        placeholder="Ej: 525562114573"
+                        required
+                    >
+                </div>
+                <button type="submit" id="searchButton">Buscar</button>
+            </form>
+        </div>
+
+        <div class="status-bar" id="statusBar">
+            <div class="status-info">
+                <div class="status-item">
+                    <span class="status-label">Total</span>
+                    <span class="status-value" id="totalCount">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Exitosos</span>
+                    <span class="status-value" style="color: #28a745;" id="successCount">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Fallidos</span>
+                    <span class="status-value" style="color: #dc3545;" id="failedCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Buscando contactos...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="empty-state" id="emptyState">
+            <div class="empty-state-icon">📱</div>
+            <p class="empty-state-text">Ingrese un número de teléfono para buscar contactos</p>
+        </div>
+
+        <div class="contacts-container" id="contactsContainer">
+            <div class="contacts-grid" id="contactsGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración
+        const CONFIG = {
+            host: 'kitapi-us.voximplant.com',
+            domain: 'jvega',
+            accessToken: 'd806f1fffd88e7289a0586476203b762161edb71083286a51fad4945d21592ec'
+        };
+
+        // Elementos DOM
+        const searchForm = document.getElementById('searchForm');
+        const phoneInput = document.getElementById('phoneInput');
+        const searchButton = document.getElementById('searchButton');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const emptyState = document.getElementById('emptyState');
+        const statusBar = document.getElementById('statusBar');
+        const contactsContainer = document.getElementById('contactsContainer');
+        const contactsGrid = document.getElementById('contactsGrid');
+        const totalCount = document.getElementById('totalCount');
+        const successCount = document.getElementById('successCount');
+        const failedCount = document.getElementById('failedCount');
+
+        // Mostrar estado vacío inicialmente
+        emptyState.classList.add('visible');
+
+        // Manejador del formulario de búsqueda
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = phoneInput.value.trim();
+            
+            if (!phone) {
+                showError('Por favor ingrese un número de teléfono');
+                return;
+            }
+
+            await searchContacts(phone);
+        });
+
+        // Función de búsqueda de contactos
+        async function searchContacts(phone) {
+            // Mostrar carga, ocultar otros estados
+            loading.classList.add('visible');
+            error.classList.remove('visible');
+            emptyState.classList.remove('visible');
+            statusBar.classList.remove('visible');
+            contactsGrid.innerHTML = '';
+            searchButton.disabled = true;
+
+            try {
+                const url = `https://${CONFIG.host}/api/v3/agentCampaigns/searchContacts?domain=${CONFIG.domain}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        access_token: CONFIG.accessToken,
+                        phone: phone
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error('La API devolvió una respuesta no exitosa');
+                }
+
+                // Obtener datos de campaña para cada contacto
+                await fetchCampaignDataForContacts(data.result);
+                displayContacts(data);
+
+            } catch (err) {
+                console.error('Error al obtener contactos:', err);
+                showError(`Error al obtener contactos: ${err.message}`);
+            } finally {
+                loading.classList.remove('visible');
+                searchButton.disabled = false;
+            }
+        }
+
+        // Obtener datos de campaña para cada contacto
+        async function fetchCampaignDataForContacts(contacts) {
+            const campaignCache = {};
+            
+            for (const contact of contacts) {
+                const campaignId = contact.agent_campaign_id;
+                
+                // Usar caché si ya tenemos esta campaña
+                if (campaignCache[campaignId]) {
+                    contact.campaign = campaignCache[campaignId];
+                    continue;
+                }
+
+                try {
+                    const url = `https://${CONFIG.host}/api/v3/agentCampaigns/searchCampaigns?domain=${CONFIG.domain}`;
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: new URLSearchParams({
+                            access_token: CONFIG.accessToken,
+                            id: campaignId
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.result && data.result.length > 0) {
+                            const campaignData = data.result[0];
+                            campaignCache[campaignId] = campaignData;
+                            contact.campaign = campaignData;
+                        }
+                    }
+                } catch (err) {
+                    console.error(`Error al obtener campaña ${campaignId}:`, err);
+                }
+            }
+        }
+
+        // Mostrar contactos
+        function displayContacts(data) {
+            const contacts = data.result || [];
+
+            if (contacts.length === 0) {
+                emptyState.querySelector('.empty-state-text').textContent = 'No se encontraron contactos para este número';
+                emptyState.classList.add('visible');
+                return;
+            }
+
+            // Actualizar barra de estado
+            const successful = contacts.filter(c => c.status === 'success').length;
+            const failed = contacts.filter(c => c.status === 'failed').length;
+            
+            totalCount.textContent = contacts.length;
+            successCount.textContent = successful;
+            failedCount.textContent = failed;
+            statusBar.classList.add('visible');
+
+            // Mostrar tarjetas de contacto
+            contactsGrid.innerHTML = contacts.map(contact => createContactCard(contact)).join('');
+        }
+
+        // Crear tarjeta de contacto HTML
+        function createContactCard(contact) {
+            const statusClass = contact.status === 'success' ? 'status-success' : 
+                               contact.status === 'failed' ? 'status-failed' : 'status-pending';
+            
+            const statusText = contact.status === 'success' ? 'exitoso' : 
+                              contact.status === 'failed' ? 'fallido' : 'pendiente';
+            
+            const attemptDots = Array.from({ length: contact.max_attempts }, (_, i) => 
+                `<span class="attempt-dot ${i < contact.current_attempt ? 'active' : ''}"></span>`
+            ).join('');
+
+            const customDataStr = JSON.stringify(contact.custom_data, null, 2);
+
+            // Información de campaña
+            let campaignSection = '';
+            if (contact.campaign) {
+                const campaign = contact.campaign;
+                const modeText = campaign.mode === 'progressive' ? 'progresivo' : 
+                                campaign.mode === 'predictive' ? 'predictivo' : 
+                                campaign.mode === 'preview' ? 'vista previa' : campaign.mode;
+                
+                const statusCampaignText = campaign.status === 'completed' ? 'completada' :
+                                          campaign.status === 'active' ? 'activa' :
+                                          campaign.status === 'paused' ? 'pausada' : campaign.status;
+
+                const workingTime = Array.isArray(campaign.working_time) && campaign.working_time.length === 2
+                    ? `${campaign.working_time[0] || 'N/A'} - ${campaign.working_time[1] || 'N/A'}`
+                    : 'N/A';
+
+                campaignSection = `
+                    <div class="campaign-section">
+                        <div class="campaign-title-header">📋 Nombre Campaña: ${campaign.title || 'Sin título'}</div>
+                        <div class="detail-row">
+                            <div class="detail-label">Modo:</div>
+                            <div class="detail-value">${modeText}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Estado Camp.:</div>
+                            <div class="detail-value">${statusCampaignText}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Fecha Inicio:</div>
+                            <div class="detail-value">${campaign.date_start ? formatDate(campaign.date_start) : 'N/A'}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Fecha Fin:</div>
+                            <div class="detail-value">${campaign.date_end ? formatDate(campaign.date_end) : 'N/A'}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Horario:</div>
+                            <div class="detail-value">${workingTime}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Intentos Max:</div>
+                            <div class="detail-value">${campaign.max_attempts}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="contact-card">
+                    <div class="contact-header">
+                        <div class="phone-number">📞 ${contact.phone}</div>
+                        <div class="status-badge ${statusClass}">${statusText}</div>
+                    </div>
+                    <div class="contact-details">
+                        <div class="detail-row">
+                            <div class="detail-label">Estado:</div>
+                            <div class="detail-value">${statusText}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Intentos Max:</div>
+                            <div class="detail-value">${contact.max_attempts}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Intento Actual:</div>
+                            <div class="detail-value">
+                                <div class="attempts-indicator">
+                                    <span>${contact.current_attempt} / ${contact.max_attempts}</span>
+                                    <div class="attempt-dots">${attemptDots}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Último Intento:</div>
+                            <div class="detail-value">${formatDate(contact.last_attempt_date)}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Datos Custom:</div>
+                            <div class="detail-value">
+                                <div class="custom-data">${customDataStr}</div>
+                            </div>
+                        </div>
+                        ${campaignSection}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Formatear fecha
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            const date = new Date(dateStr);
+            return date.toLocaleString('es-MX', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // Mostrar error
+        function showError(message) {
+            error.textContent = message;
+            error.classList.add('visible');
+            emptyState.classList.remove('visible');
+            statusBar.classList.remove('visible');
+        }
+    </script>
+</body>
+</html>
